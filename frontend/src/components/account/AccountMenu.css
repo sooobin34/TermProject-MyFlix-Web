@@ -1,0 +1,87 @@
+.account-menu-wrap {
+    position: relative;
+}
+
+.account-avatar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #fff;
+}
+
+.account-dropdown {
+    position: absolute;
+    right: 0;
+    top: 48px;
+    width: 220px;
+    background: #111;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    padding: 10px 0;
+    z-index: 100;
+}
+
+.account-section {
+    padding: 8px 14px;
+    border-bottom: 1px solid #222;
+}
+
+.account-section:last-child {
+    border-bottom: none;
+}
+
+.account-email {
+    font-size: 13px;
+    opacity: .85;
+}
+
+.account-plan {
+    font-size: 12px;
+    opacity: .7;
+}
+
+.account-profile-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: none;
+    border: none;
+    color: #fff;
+    padding: 6px 0;
+    cursor: pointer;
+}
+
+.account-profile-item:hover {
+    opacity: .85;
+}
+
+.account-profile-item.active {
+    font-weight: bold;
+}
+
+.avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.account-link {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    color: #fff;
+    padding: 6px 0;
+    cursor: pointer;
+}
+
+.account-link.danger {
+    color: #ef4444;
+}

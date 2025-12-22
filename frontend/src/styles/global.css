@@ -1,0 +1,83 @@
+/* ===== 전역 리셋 & 기본 레이아웃 ===== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    color: #fff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* ✅ 가로 스크롤/우측 여백 강제 제거 */
+body,
+#root {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden;
+}
+
+/* 메인 영역은 화면 전체 폭 사용 */
+main {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* 페이지 공통 컨테이너(폭 고정/여백 문제 해결용) */
+.home-container,
+.popular-container,
+.search-container,
+.wishlist-container,
+.profile-select-page {
+    width: 100%;
+    max-width: 100% !important;
+    margin: 0;
+    padding-inline: 4%;
+}
+
+/* 위쪽에 쓸데없이 큰 여백 줄이기 (헤더 높이만큼만) */
+.home-container,
+.popular-container,
+.search-container,
+.wishlist-container,
+.profile-select-page {
+    padding-top: 72px;
+    padding-bottom: 32px;
+}
+
+/* ===== 모바일 최적화 ===== */
+@media (max-width: 768px) {
+    .home-container,
+    .popular-container,
+    .search-container,
+    .wishlist-container,
+    .profile-select-page {
+        padding-top: 64px;   /* 헤더랑 딱 맞게 */
+        padding-inline: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-container,
+    .popular-container,
+    .search-container,
+    .wishlist-container,
+    .profile-select-page {
+        padding-top: 56px;
+        padding-inline: 12px;
+    }
+}
+
+/* ✅ 모바일에서 가로 넘침 방지 */
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}

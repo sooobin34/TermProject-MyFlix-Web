@@ -1,0 +1,325 @@
+/* src/pages/Home/featured-slider.css */
+
+/* ─────────────────────────
+   전역 가로 스크롤 방지 (안전빵)
+   ───────────────────────── */
+html, body, #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;   /* ✅ 옆으로 밀려나서 생기는 가로 스크롤 방지 */
+}
+
+/* ===== 공통 레이아웃 ===== */
+
+.featured-wrapper {
+    width: 100%;
+    padding: 16px 0 8px;
+    overflow: hidden;      /* ✅ 트랙이 살짝 넘쳐도 밖으로 안 나가게 */
+}
+
+.featured-inner {
+    position: relative;
+    width: 100%;
+    max-width: 1120px;     /* 데스크탑에서만 중앙 정렬 폭 제한 */
+    margin: 0 auto;
+    border-radius: 24px;
+    overflow: hidden;
+    background: radial-gradient(circle at top, #111827, #020617);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.85);
+}
+
+/* 슬라이드 트랙 */
+.featured-track {
+    display: flex;
+    width: 100%;
+    will-change: transform;
+}
+
+/* 각 슬라이드 카드 (한 화면 = 슬라이드 한 장) */
+.featured-card {
+    flex: 0 0 100%;
+    display: flex;
+    align-items: stretch;
+    min-height: 260px;
+    max-height: 360px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== 텍스트 영역 ===== */
+
+.featured-text {
+    flex: 1.1;
+    padding: 24px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    z-index: 1;
+}
+
+.featured-tag {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(248, 250, 252, 0.9);
+}
+
+.featured-title {
+    font-size: 26px;
+    line-height: 1.1;
+    font-weight: 800;
+    margin: 0;
+}
+
+.featured-overview {
+    font-size: 13px;
+    line-height: 1.6;
+    max-height: 3.2em;
+    overflow: hidden;
+    color: rgba(209, 213, 219, 0.95);
+}
+
+/* 버튼들 */
+
+.featured-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.featured-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 8px 16px;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+    transition:
+            transform 0.16s ease,
+            box-shadow 0.16s ease,
+            background 0.16s ease,
+            color 0.16s ease;
+    will-change: transform, box-shadow;
+}
+
+.featured-btn svg {
+    font-size: 12px;
+}
+
+.featured-btn.primary {
+    background: #e50914;
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(229, 9, 20, 0.55);
+}
+
+.featured-btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(229, 9, 20, 0.7);
+    background: #f6121d;
+}
+
+.featured-btn.ghost {
+    background: rgba(15, 23, 42, 0.85);
+    color: rgba(248, 250, 252, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.6);
+}
+
+.featured-btn.ghost:hover {
+    transform: translateY(-1px);
+    background: rgba(15, 23, 42, 0.95);
+}
+
+/* ===== 이미지 영역 ===== */
+
+.featured-image-wrap {
+    flex: 1.4;
+    position: relative;
+    overflow: hidden;
+}
+
+.featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.02);
+    transition:
+            transform 0.65s ease-out,
+            filter 0.65s ease-out;
+    will-change: transform, filter;
+}
+
+.featured-image-gradient {
+    position: absolute;
+    inset: 0;
+    background:
+            linear-gradient(90deg, rgba(0, 0, 0, 0.65), transparent 40%),
+            radial-gradient(circle at right, rgba(15, 23, 42, 0.9), transparent 55%);
+    mix-blend-mode: multiply;
+}
+
+/* 카드 hover 시 이미지 살짝 확대 */
+.featured-card:hover .featured-image {
+    transform: scale(1.08);
+    filter: brightness(1.03);
+}
+
+/* ===== 좌우 네비게이션 버튼 ===== */
+
+.featured-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: none;
+    background: rgba(15, 23, 42, 0.92);
+    color: rgba(249, 250, 251, 0.9);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.75);
+    transition:
+            transform 0.16s ease,
+            background 0.16s ease,
+            color 0.16s ease,
+            box-shadow 0.16s ease;
+    will-change: transform, box-shadow;
+}
+
+.featured-nav-left {
+    left: 8px;
+}
+
+.featured-nav-right {
+    right: 8px;
+}
+
+.featured-nav:hover {
+    transform: translateY(-50%) translateY(-1px);
+    background: rgba(15, 23, 42, 1);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.9);
+}
+
+/* ===== 인디케이터 점 ===== */
+
+.featured-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.featured-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    border: none;
+    background: rgba(148, 163, 184, 0.55);
+    cursor: pointer;
+    transition:
+            width 0.18s ease,
+            background 0.18s ease,
+            opacity 0.18s ease;
+}
+
+.featured-dot.active {
+    width: 18px;
+    background: #e50914;
+}
+
+/* ===== 시청 중 섹션 empty 박스 ===== */
+
+.home-continue-empty-wrap {
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.home-continue-empty-box {
+    margin-top: 10px;
+}
+
+.home-continue-empty-sub {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #d1d5db;
+}
+
+/* =========================
+   반응형 - 태블릿 이하
+   ========================= */
+
+@media (max-width: 900px) {
+    .featured-inner {
+        border-radius: 18px;
+    }
+
+    .featured-card {
+        flex-direction: column;
+        max-height: none;
+    }
+
+    .featured-text {
+        padding: 20px 18px 16px;
+    }
+
+    .featured-image-wrap {
+        height: 190px;
+    }
+
+    .featured-title {
+        font-size: 22px;
+    }
+
+    .featured-overview {
+        font-size: 12px;
+        max-height: 4.5em;
+    }
+}
+
+/* =========================
+   반응형 - 모바일 (아이폰)
+   ========================= */
+
+@media (max-width: 600px) {
+    .featured-wrapper {
+        padding-top: 12px;
+        padding-bottom: 4px;
+        padding-inline: 0;
+    }
+
+    .featured-inner {
+        border-radius: 0;
+        max-width: 100%;   /* ✅ 모바일에서는 헤더와 동일하게 화면 꽉 채우기 */
+        margin: 0;
+    }
+
+    .featured-card {
+        min-height: 220px;
+    }
+
+    .featured-text {
+        padding: 18px 16px 14px;
+    }
+
+    .featured-title {
+        font-size: 1.3rem;
+    }
+
+    .featured-overview {
+        font-size: 0.9rem;
+        max-height: 5.2rem;
+    }
+
+    .featured-nav {
+        width: 30px;
+        height: 30px;
+    }
+}

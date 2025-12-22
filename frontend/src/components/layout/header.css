@@ -1,0 +1,281 @@
+/*src/components/layout/header.css*/
+
+/* 전체 헤더 바 */
+.app-header {
+    height: 56px;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to right, #000000, #111111);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 왼쪽 영역: 로고 + 네비게이션 */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+/* ✅ 햄버거 버튼 (석삼자) */
+.menu-toggle {
+    display: none;                 /* 기본은 숨김 → 모바일에서만 보이게 */
+    margin-right: 8px;
+    padding: 4px 2px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    /* 세 줄을 세로로 쌓기 */
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-toggle:focus-visible {
+    outline: 2px solid #e50914;
+    outline-offset: 2px;
+}
+
+.menu-bar {
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background-color: #f9fafb;
+    display: block;
+    margin: 3px 0;                 /* ✅ 줄 사이 간격 넉넉히 → ---처럼 안 보이게 */
+}
+
+/* 로고 */
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transform-origin: left center;
+    transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+/* MyFlix 텍스트에 그라디언트 + 살짝 광택 */
+.logo-text {
+    background: linear-gradient(120deg, #ffffff 0%, #ffb347 40%, #ff416c 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+    transition: text-shadow 0.25s ease, filter 0.25s ease;
+}
+
+/* 호버 시 살짝 커지고 더 밝아짐 (웹/모바일 공통) */
+.logo:hover {
+    transform: translateY(-1px) scale(1.03);
+    filter: drop-shadow(0 0 12px rgba(229, 9, 20, 0.6));
+}
+
+.logo:hover .logo-text {
+    text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
+}
+
+
+/* (노란 달은 더 이상 사용 안 하지만, 남아 있어도 문제 없음) */
+.logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 30%, #ffcc66, #ff9900);
+}
+
+/* 네비게이션 (Home / Popular / Search / Wishlist) */
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+
+.nav-link {
+    position: relative;
+    font-size: 15px;
+    color: #e5e5e5;
+    text-decoration: none;
+    padding-bottom: 4px;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* 호버 시: 글자 밝아지고 밑줄 슥 나타남 */
+.nav-link:hover {
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* 활성 탭: 항상 강조 + 밑줄 표시 */
+.nav-link-active {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* 기본 밑줄(숨겨진 상태) */
+.nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: #e50914;
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav-link-active::after {
+    transform: scaleX(1);
+    opacity: 1;
+}
+
+/* 오른쪽 영역 */
+.header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap; /* 한 줄로 유지 */
+}
+
+/* 환영 문구 */
+.header-welcome {
+    font-size: 14px;
+    color: #f3f4f6;
+}
+
+/* 계정 설정 버튼 */
+.header-account-btn {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(248, 250, 252, 0.6);
+    background: transparent;
+    color: #f9fafb;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.header-account-btn:hover {
+    background: rgba(249, 250, 251, 0.08);
+}
+
+/* ✅ 모바일용 드롭다운 메뉴 */
+.mobile-nav {
+    display: none; /* 기본값 – 실제로는 JSX에서 조건부 렌더링 */
+}
+
+/* ==============================
+   반응형 (태블릿/모바일)
+   ============================== */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0 16px;
+    }
+
+    .header-left {
+        gap: 16px;
+    }
+
+    /* ✅ 모바일에서는 햄버거 보이게, 기본 nav 숨기기 */
+    .menu-toggle {
+        display: inline-flex;
+    }
+
+    .main-nav {
+        display: none;
+    }
+
+    /* ✅ 모바일에서 환영 문구 표시 */
+    .header-welcome {
+        display: inline-block;
+        font-size: 13px;
+        color: #e5e5e5;
+        opacity: 0.9;
+        white-space: nowrap;
+    }
+
+    /* ✅ 헤더 오른쪽 영역 정렬 보정 */
+    .header-right {
+        gap: 8px;
+    }
+
+    .header-account-btn {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+
+    /* ✅ 모바일 드롭다운 스타일 */
+    .mobile-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 24px 12px;
+        background: #050505;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mobile-nav-link {
+        position: relative;
+        text-decoration: none;
+        color: #e5e5e5;
+        font-size: 14px;
+        padding: 6px 0;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .mobile-nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -2px;
+        width: 32px;                  /* 모바일은 전체 밑줄 말고 짧게 */
+        height: 2px;
+        background: #e50914;
+        transform: scaleX(0);
+        transform-origin: left center;
+        opacity: 0;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .mobile-nav-link:hover {
+        color: #ffffff;
+        transform: translateX(2px);
+    }
+
+    .mobile-nav-link:hover::after {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+
+    .mobile-nav-link-active {
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .mobile-nav-link-active::after {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 0 12px;
+    }
+
+    .logo {
+        font-size: 18px;
+    }
+}

@@ -1,0 +1,105 @@
+/* src/index.css */
+
+:root {
+    --bg: #050505;
+    --bg-elevated: #101010;
+    --bg-elevated-soft: #151515;
+    --accent: #e50914;
+    --accent-soft: rgba(229, 9, 20, 0.18);
+    --text-main: #ffffff;
+    --text-subtle: #b3b3b3;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --shadow-soft: 0 14px 35px rgba(0, 0, 0, 0.7);
+    --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-main);
+    background: radial-gradient(circle at top, #181818 0, #050505 55%, #000 100%);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font-family: inherit;
+}
+
+/* 스크롤바 살짝 커스텀 */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* 공통 페이지 페이드 인 */
+.page-fade {
+    animation: page-fade-in 0.35s ease;
+}
+
+@keyframes page-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+
+.app-main {
+    padding-top: 64px; /* 헤더 높이만큼 밀어주기 */
+}
+
+/* 페이지 전환 애니메이션 */
+.page-container {
+    animation: pageFadeIn 0.35s ease both;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
