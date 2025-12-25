@@ -108,7 +108,7 @@ Firebase를 통한 인증 및 데이터 연동을 구현한 Term Project입니�
 
 ### 1️⃣ Web App 실행
 ```bash
-git clone https://github.com/your-repo-name/TermProject-MyFlix.git
+git clone https://github.com/sooobin34/TermProject-MyFlix-Web.git
 cd TermProject-MyFlix
 npm install
 npm run dev
