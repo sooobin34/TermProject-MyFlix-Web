@@ -121,7 +121,7 @@ http://localhost:5173
 
 ### 2️⃣ Mobile App 실행
 ```bash
-git clone https://github.com/sooobin34/TermProject-MyFlix-Web.git
+git clone https://github.com/sooobin34/TermProject-MyFlix-Mobile.git
 cd MyFlixMobile
 npm install
 npx expo start --dev-client
