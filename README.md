@@ -175,4 +175,4 @@ VITE_TMDB_API_KEY=your_tmdb_api_key_here
 ### 📎 Mobile App Repository
 
 👉 Mobile App GitHub Repository
-https://github.com/your-repo-name/MyFlixMobile
+https://github.com/sooobin34/TermProject-MyFlix-Mobile.git
