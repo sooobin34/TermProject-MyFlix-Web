@@ -97,19 +97,28 @@ export const ProfileSelectPage = () => {
                             className="profile-card"
                             onClick={() => handleSelect(p.id)}
                             style={{ backgroundColor: p.color }}
+                            type="button"
                         >
-                            {/* 수정 버튼 */}
-                            <button
-                                type="button"
+                            {/* ✅ 수정 버튼: button 중첩 금지 → span으로 변경 */}
+                            <span
+                                role="button"
+                                tabIndex={0}
                                 className="profile-edit-btn"
+                                aria-label="프로필 수정"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     openEditModal(p.id);
                                 }}
-                                aria-label="프로필 수정"
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        openEditModal(p.id);
+                                    }
+                                }}
                             >
-                                <FaPen size={12} />
-                            </button>
+                <FaPen size={12} />
+              </span>
 
                             <div className="profile-icon">{p.icon}</div>
                             <div className="profile-name">{p.name}</div>
@@ -117,7 +126,7 @@ export const ProfileSelectPage = () => {
                     ))}
 
                     {!isProfileLimitReached && (
-                        <button className="profile-card add-card" onClick={openAddModal}>
+                        <button className="profile-card add-card" onClick={openAddModal} type="button">
                             <span className="profile-icon">+</span>
                             <span className="profile-name">프로필 추가</span>
                         </button>
@@ -148,9 +157,7 @@ export const ProfileSelectPage = () => {
                                     <button
                                         key={c}
                                         type="button"
-                                        className={
-                                            "profile-color-dot" + (c === color ? " selected" : "")
-                                        }
+                                        className={"profile-color-dot" + (c === color ? " selected" : "")}
                                         style={{ backgroundColor: c }}
                                         onClick={() => setColor(c)}
                                     />
@@ -165,9 +172,7 @@ export const ProfileSelectPage = () => {
                                     <button
                                         key={em}
                                         type="button"
-                                        className={
-                                            "profile-emoji-btn" + (em === icon ? " selected" : "")
-                                        }
+                                        className={"profile-emoji-btn" + (em === icon ? " selected" : "")}
                                         onClick={() => setIcon(em)}
                                     >
                                         {em}
@@ -184,11 +189,7 @@ export const ProfileSelectPage = () => {
                                 취소
                             </button>
                             {modalMode === "edit" && (
-                                <button
-                                    type="button"
-                                    className="danger"
-                                    onClick={handleDelete}
-                                >
+                                <button type="button" className="danger" onClick={handleDelete}>
                                     <FaTrash style={{ marginRight: 4 }} />
                                     삭제
                                 </button>

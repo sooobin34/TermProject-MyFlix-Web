@@ -3,14 +3,24 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 
 import "./signin.css";
-import { isValidEmail, tryLogin, tryRegister } from "../../auth/authService";
+import {
+    isValidEmail,
+    tryLogin,
+    tryRegister,
+    signInWithGoogle,
+} from "../../auth/authService";
 import { useAuth } from "../../hooks/useAuth";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 
 export const SigninPage = () => {
     const [isSignup, setIsSignup] = useState(false);
+
+    // ✅ Google 로그인 후 TMDB Key가 없을 때 입력 UI를 띄우기 위한 상태
+    const [needTmdbKey, setNeedTmdbKey] = useState(false);
+    const [tmdbKeyInput, setTmdbKeyInput] = useState("");
 
     // 로그인 폼 상태
     const [loginEmail, setLoginEmail] = useState("");
@@ -67,18 +77,13 @@ export const SigninPage = () => {
             loginEmail,
             loginPassword,
             (user) => {
-                // 로그인 로직 (useAuth에서 LocalStorage 등 처리)
-                login(user.id);
+                // ✅ 로컬 로그인: uid 없음 → null
+                login(null, user.id);
 
-                // Remember me 값이 true인 경우에 대한 부가 처리
-                if (rememberMe) {
-                    localStorage.setItem("keepLogin", "true");
-                } else {
-                    localStorage.removeItem("keepLogin");
-                }
+                if (rememberMe) localStorage.setItem("keepLogin", "true");
+                else localStorage.removeItem("keepLogin");
 
                 toast.success("로그인에 성공했습니다!");
-                // ✅ 로그인 성공 후 프로필 선택 페이지로 이동
                 navigate("/profiles", { replace: true });
             },
             (message) => {
@@ -122,11 +127,7 @@ export const SigninPage = () => {
             signPassword,
             (user) => {
                 toast.success("회원가입이 완료되었습니다. 이제 로그인해 주세요!");
-
-                // 회원가입 후 → 로그인 탭으로 전환
                 setIsSignup(false);
-
-                // 방금 가입한 정보 자동 채워주기
                 setLoginEmail(user.id);
                 setLoginPassword(user.password);
             },
@@ -135,6 +136,53 @@ export const SigninPage = () => {
                 toast.error(message);
             }
         );
+    };
+
+    // ✅ Google 로그인 핸들러
+    const handleGoogleLogin = async () => {
+        setErrorMsg(null);
+
+        try {
+            const gUser = await signInWithGoogle();
+
+            // Remember me 처리
+            if (rememberMe) localStorage.setItem("keepLogin", "true");
+            else localStorage.removeItem("keepLogin");
+
+            // ✅ Firebase 로그인: uid + email 저장
+            login(gUser.uid, gUser.email);
+
+            // TMDB Key 없으면 입력 UI 띄우기
+            const existingKey = (localStorage.getItem("TMDb-Key") ?? "").trim();
+            if (!existingKey) {
+                setNeedTmdbKey(true);
+                toast("TMDB API Key를 한 번만 입력하면 저장됩니다.");
+                return;
+            }
+
+            toast.success("Google 로그인 성공!");
+            navigate("/profiles", { replace: true });
+        } catch (err: unknown) {
+            console.error("Google login error:", err);
+            const msg =
+                err instanceof Error ? err.message : "Google 로그인 중 오류가 발생했습니다.";
+            setErrorMsg(msg);
+            toast.error(msg);
+        }
+    };
+
+    // ✅ TMDB Key 저장 후 진행
+    const handleSaveTmdbKeyAndContinue = () => {
+        const trimmed = tmdbKeyInput.trim();
+        if (!trimmed) {
+            toast.error("TMDB API Key를 입력해주세요.");
+            return;
+        }
+
+        localStorage.setItem("TMDb-Key", trimmed);
+        setNeedTmdbKey(false);
+        toast.success("TMDB API Key 저장 완료!");
+        navigate("/profiles", { replace: true });
     };
 
     return (
@@ -189,11 +237,50 @@ export const SigninPage = () => {
                         </button>
                     </div>
 
+                    {/* ✅ Google 로그인 버튼 */}
+                    {!isSignup && (
+                        <button
+                            type="button"
+                            className="auth-button"
+                            onClick={handleGoogleLogin}
+                            style={{ marginBottom: 10 }}
+                        >
+                            <FaGoogle style={{ marginRight: 8 }} />
+                            Google로 로그인
+                        </button>
+                    )}
+
+                    {/* ✅ Google 로그인 후 TMDB 키가 없으면 입력 UI 표시 */}
+                    {!isSignup && needTmdbKey && (
+                        <div className="auth-form" style={{ marginBottom: 12 }}>
+                            <h2 style={{ marginBottom: 8 }}>TMDB API Key 입력</h2>
+
+                            <div className="auth-field">
+                                <label htmlFor="tmdb-key">TMDB API Key</label>
+                                <div className="field-highlight">
+                                    <input
+                                        id="tmdb-key"
+                                        type="password"
+                                        placeholder="TMDB API Key를 입력 후 저장"
+                                        value={tmdbKeyInput}
+                                        onChange={(e) => setTmdbKeyInput(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="auth-button"
+                                onClick={handleSaveTmdbKeyAndContinue}
+                            >
+                                TMDB Key 저장하고 계속하기
+                            </button>
+                        </div>
+                    )}
+
                     {/* 슬라이딩 폼 */}
                     <div className="auth-forms-wrapper">
-                        <div
-                            className={`auth-forms ${isSignup ? "show-signup" : ""}`}
-                        >
+                        <div className={`auth-forms ${isSignup ? "show-signup" : ""}`}>
                             {/* 로그인 폼 */}
                             <form className="auth-form" onSubmit={handleLoginSubmit}>
                                 <h2>로그인</h2>
@@ -209,55 +296,37 @@ export const SigninPage = () => {
                                             value={loginEmail}
                                             onChange={(e) => {
                                                 setLoginEmail(e.target.value);
-                                                if (loginEmailError)
-                                                    setLoginEmailError(false);
+                                                if (loginEmailError) setLoginEmailError(false);
                                             }}
-                                            className={
-                                                loginEmailError ? "input-error" : ""
-                                            }
+                                            className={loginEmailError ? "input-error" : ""}
                                         />
                                     </div>
                                 </div>
 
                                 {/* 비밀번호 */}
                                 <div className="auth-field">
-                                    <label htmlFor="login-password">
-                                        비밀번호 (TMDB API Key)
-                                    </label>
+                                    <label htmlFor="login-password">비밀번호 (TMDB API Key)</label>
                                     <div className="field-highlight password-highlight">
                                         <input
                                             id="login-password"
-                                            type={
-                                                showLoginPassword ? "text" : "password"
-                                            }
+                                            type={showLoginPassword ? "text" : "password"}
                                             placeholder="발급받은 TMDB API 키를 입력"
                                             value={loginPassword}
                                             onChange={(e) => {
                                                 setLoginPassword(e.target.value);
-                                                if (loginPasswordError)
-                                                    setLoginPasswordError(false);
+                                                if (loginPasswordError) setLoginPasswordError(false);
                                             }}
-                                            className={
-                                                loginPasswordError ? "input-error" : ""
-                                            }
+                                            className={loginPasswordError ? "input-error" : ""}
                                         />
                                         <button
                                             type="button"
                                             className="password-toggle-btn"
-                                            onClick={() =>
-                                                setShowLoginPassword((prev) => !prev)
-                                            }
+                                            onClick={() => setShowLoginPassword((prev) => !prev)}
                                             aria-label={
-                                                showLoginPassword
-                                                    ? "비밀번호 숨기기"
-                                                    : "비밀번호 보기"
+                                                showLoginPassword ? "비밀번호 숨기기" : "비밀번호 보기"
                                             }
                                         >
-                                            {showLoginPassword ? (
-                                                <FaRegEyeSlash />
-                                            ) : (
-                                                <FaRegEye />
-                                            )}
+                                            {showLoginPassword ? <FaRegEyeSlash /> : <FaRegEye />}
                                         </button>
                                     </div>
                                 </div>
@@ -268,9 +337,7 @@ export const SigninPage = () => {
                                         <input
                                             type="checkbox"
                                             checked={rememberMe}
-                                            onChange={(e) =>
-                                                setRememberMe(e.target.checked)
-                                            }
+                                            onChange={(e) => setRememberMe(e.target.checked)}
                                         />
                                         <span>로그인 상태 유지 (Remember me)</span>
                                     </label>
@@ -281,9 +348,7 @@ export const SigninPage = () => {
                                 </button>
 
                                 <div className="auth-helper">
-                                    <span>
-                                        아직 계정이 없나요? 위 탭에서 회원가입을 선택하세요.
-                                    </span>
+                                    <span>아직 계정이 없나요? 위 탭에서 회원가입을 선택하세요.</span>
                                 </div>
                             </form>
 
@@ -302,21 +367,16 @@ export const SigninPage = () => {
                                             value={signEmail}
                                             onChange={(e) => {
                                                 setSignEmail(e.target.value);
-                                                if (signEmailError)
-                                                    setSignEmailError(false);
+                                                if (signEmailError) setSignEmailError(false);
                                             }}
-                                            className={
-                                                signEmailError ? "input-error" : ""
-                                            }
+                                            className={signEmailError ? "input-error" : ""}
                                         />
                                     </div>
                                 </div>
 
                                 {/* 비밀번호 */}
                                 <div className="auth-field">
-                                    <label htmlFor="sign-password">
-                                        비밀번호 (TMDB API Key)
-                                    </label>
+                                    <label htmlFor="sign-password">비밀번호 (TMDB API Key)</label>
                                     <div className="field-highlight password-highlight">
                                         <input
                                             id="sign-password"
@@ -325,69 +385,44 @@ export const SigninPage = () => {
                                             value={signPassword}
                                             onChange={(e) => {
                                                 setSignPassword(e.target.value);
-                                                if (signPasswordError)
-                                                    setSignPasswordError(false);
+                                                if (signPasswordError) setSignPasswordError(false);
                                             }}
-                                            className={
-                                                signPasswordError ? "input-error" : ""
-                                            }
+                                            className={signPasswordError ? "input-error" : ""}
                                         />
                                         <button
                                             type="button"
                                             className="password-toggle-btn"
-                                            onClick={() =>
-                                                setShowSignPassword((prev) => !prev)
-                                            }
+                                            onClick={() => setShowSignPassword((prev) => !prev)}
                                             aria-label={
-                                                showSignPassword
-                                                    ? "비밀번호 숨기기"
-                                                    : "비밀번호 보기"
+                                                showSignPassword ? "비밀번호 숨기기" : "비밀번호 보기"
                                             }
                                         >
-                                            {showSignPassword ? (
-                                                <FaRegEyeSlash />
-                                            ) : (
-                                                <FaRegEye />
-                                            )}
+                                            {showSignPassword ? <FaRegEyeSlash /> : <FaRegEye />}
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* 비밀번호 확인 */}
                                 <div className="auth-field">
-                                    <label htmlFor="sign-password-confirm">
-                                        비밀번호 확인
-                                    </label>
+                                    <label htmlFor="sign-password-confirm">비밀번호 확인</label>
                                     <div className="field-highlight password-highlight">
                                         <input
                                             id="sign-password-confirm"
-                                            type={
-                                                showSignPasswordConfirm
-                                                    ? "text"
-                                                    : "password"
-                                            }
+                                            type={showSignPasswordConfirm ? "text" : "password"}
                                             placeholder="위와 동일한 값을 입력"
                                             value={signPasswordConfirm}
                                             onChange={(e) => {
-                                                setSignPasswordConfirm(
-                                                    e.target.value
-                                                );
+                                                setSignPasswordConfirm(e.target.value);
                                                 if (signPasswordConfirmError)
                                                     setSignPasswordConfirmError(false);
                                             }}
-                                            className={
-                                                signPasswordConfirmError
-                                                    ? "input-error"
-                                                    : ""
-                                            }
+                                            className={signPasswordConfirmError ? "input-error" : ""}
                                         />
                                         <button
                                             type="button"
                                             className="password-toggle-btn"
                                             onClick={() =>
-                                                setShowSignPasswordConfirm(
-                                                    (prev) => !prev
-                                                )
+                                                setShowSignPasswordConfirm((prev) => !prev)
                                             }
                                             aria-label={
                                                 showSignPasswordConfirm
@@ -410,9 +445,7 @@ export const SigninPage = () => {
                                         <input
                                             type="checkbox"
                                             checked={agreeTerms}
-                                            onChange={(e) =>
-                                                setAgreeTerms(e.target.checked)
-                                            }
+                                            onChange={(e) => setAgreeTerms(e.target.checked)}
                                         />
                                         <span>필수 약관에 동의합니다.</span>
                                     </label>
@@ -423,9 +456,7 @@ export const SigninPage = () => {
                                 </button>
 
                                 <div className="auth-helper">
-                                    <span>
-                                        이미 계정이 있나요? 위 탭에서 로그인으로 전환하세요.
-                                    </span>
+                                    <span>이미 계정이 있나요? 위 탭에서 로그인으로 전환하세요.</span>
                                 </div>
                             </form>
                         </div>

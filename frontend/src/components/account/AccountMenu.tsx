@@ -18,11 +18,12 @@ export const AccountMenu = ({ onClose }: AccountMenuProps) => {
         onClose();
     };
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         onClose();
         navigate("/signin", { replace: true });
     };
+
 
     const displayName =
         activeProfile?.name ?? (userEmail?.split("@")[0] ?? "사용자");

@@ -5,6 +5,7 @@ import {
     createContext,
     useContext,
     useEffect,
+    useMemo,
     useState,
     type ReactNode,
 } from "react";
@@ -36,90 +37,96 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(
 
 const MAX_PROFILES = 2;
 
-function loadProfiles(userId: string | null): {
+const DEFAULT_PROFILE: Profile = {
+    id: "p_default",
+    name: "기본 프로필",
+    color: "#e50914",
+    icon: "😀",
+};
+
+function base64EncodeUnicode(str: string): string {
+    const bytes = new TextEncoder().encode(str);
+    let binary = "";
+    for (const b of bytes) binary += String.fromCharCode(b);
+    return btoa(binary);
+}
+
+// ✅ 로컬 로그인용 키 만들기 (email 같은 문자열을 안전하게 키로)
+function makeLocalUserKey(email: string) {
+    return `local_${base64EncodeUnicode(email)}`;
+}
+
+function loadProfiles(userKey: string | null): {
     profiles: Profile[];
     activeId: string | null;
 } {
-    if (!userId) {
+    if (!userKey) {
         return { profiles: [], activeId: null };
     }
 
-    const profileKey = `myflix_profiles_${userId}`;
-    const activeKey = `myflix_active_profile_${userId}`;
+    const profileKey = `myflix_profiles_${userKey}`;
+    const activeKey = `myflix_active_profile_${userKey}`;
 
     try {
         const stored = localStorage.getItem(profileKey);
         const parsed: Profile[] = stored ? JSON.parse(stored) : [];
 
         const profiles =
-            Array.isArray(parsed) && parsed.length > 0
-                ? parsed
-                : [
-                    {
-                        id: "default",
-                        name: "기본 프로필",
-                        color: "#e50914",
-                        icon: "😀",
-                    },
-                ];
+            Array.isArray(parsed) && parsed.length > 0 ? parsed : [DEFAULT_PROFILE];
 
-        // 프로필 목록 동기화
+        // 프로필 목록 동기화(기본 프로필 자동 생성 포함)
         localStorage.setItem(profileKey, JSON.stringify(profiles));
 
         const storedActive = localStorage.getItem(activeKey);
         const activeId =
-            profiles.find((p) => p.id === storedActive)?.id ??
-            profiles[0]?.id ??
-            null;
+            profiles.find((p) => p.id === storedActive)?.id ?? profiles[0]?.id ?? null;
 
-        if (activeId) {
-            localStorage.setItem(activeKey, activeId);
-        } else {
-            localStorage.removeItem(activeKey);
-        }
+        if (activeId) localStorage.setItem(activeKey, activeId);
+        else localStorage.removeItem(activeKey);
 
         return { profiles, activeId };
-    } catch {
-        return { profiles: [], activeId: null };
+    } catch (err) {
+        console.error("[profile] loadProfiles error:", err);
+        return { profiles: [DEFAULT_PROFILE], activeId: DEFAULT_PROFILE.id };
     }
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
-    const { userId } = useAuth();
+    const { userId, userEmail } = useAuth();
+
+    // ✅ 핵심: userKey는 항상 존재하도록 만들기
+    // 1) Google 로그인: uid(userId)
+    // 2) 로컬 로그인: email 기반 localKey
+    const userKey = useMemo(() => {
+        if (userId) return userId; // uid
+        if (userEmail) return makeLocalUserKey(userEmail);
+        return null;
+    }, [userId, userEmail]);
 
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 
-    // ✅ userId가 바뀔 때마다 한 번만 프로필 로딩
+    // ✅ userKey가 바뀔 때마다 로딩
     useEffect(() => {
-        const { profiles: loaded, activeId } = loadProfiles(userId ?? null);
+        const { profiles: loaded, activeId } = loadProfiles(userKey);
         setProfiles(loaded);
         setActiveProfileId(activeId);
-    }, [userId]);
+    }, [userKey]);
 
     const persistProfiles = (next: Profile[]) => {
-        if (!userId) return;
-        localStorage.setItem(
-            `myflix_profiles_${userId}`,
-            JSON.stringify(next)
-        );
+        if (!userKey) return;
+        localStorage.setItem(`myflix_profiles_${userKey}`, JSON.stringify(next));
     };
 
     const setActiveProfile = (id: string) => {
-        if (!userId) return;
+        if (!userKey) return;
         setActiveProfileId(id);
-        localStorage.setItem(`myflix_active_profile_${userId}`, id);
+        localStorage.setItem(`myflix_active_profile_${userKey}`, id);
     };
 
-    const addProfile = (
-        name: string,
-        color: string,
-        icon: string
-    ): boolean => {
-        if (!userId) return false;
-        if (profiles.length >= MAX_PROFILES) {
-            return false;
-        }
+    const addProfile = (name: string, color: string, icon: string): boolean => {
+        if (!userKey) return false;
+        if (profiles.length >= MAX_PROFILES) return false;
 
         const newProfile: Profile = {
             id: `p_${Date.now()}`,
@@ -138,15 +145,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         id: string,
         patch: Partial<Pick<Profile, "name" | "color" | "icon">>
     ) => {
-        const next = profiles.map((p) =>
-            p.id === id ? { ...p, ...patch } : p
-        );
+        const next = profiles.map((p) => (p.id === id ? { ...p, ...patch } : p));
         setProfiles(next);
         persistProfiles(next);
     };
 
     const deleteProfile = (id: string) => {
-        if (!userId) return;
+        if (!userKey) return;
 
         const next = profiles.filter((p) => p.id !== id);
         setProfiles(next);
@@ -155,15 +160,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         if (activeProfileId === id) {
             const fallback = next[0]?.id ?? null;
             setActiveProfileId(fallback);
+
             if (fallback) {
-                localStorage.setItem(
-                    `myflix_active_profile_${userId}`,
-                    fallback
-                );
+                localStorage.setItem(`myflix_active_profile_${userKey}`, fallback);
             } else {
-                localStorage.removeItem(
-                    `myflix_active_profile_${userId}`
-                );
+                localStorage.removeItem(`myflix_active_profile_${userKey}`);
             }
         }
     };
